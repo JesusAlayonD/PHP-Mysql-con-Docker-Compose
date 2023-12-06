@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+
+  # PHP
+  backend:
+    build:
+      context: .
+      dockerfile: php.dockerfile  # Lee el dockerfile para php
+    container_name: backend_svc  # Asigna el nombre del contenedor
+    ports:
+      - 8080:80  # Asigna el puerto público
+    volumes:
+      - ./www/:/var/www/html  # Asigna la carpeta de volumen pública
+    depends_on:
+      - database  # El servicio se ejecutará en el momento que el servicio de database esté en linea
+    networks:
+      app_network:
+        aliases:
+          - backend_host  # Asigna el nombre del host con el que se podrá consumir el servicio
+
+
+  # Mysql
+  database:
+    build:
+      context: .
+      dockerfile: mysql.dockerfile  # Lee el dockerfile para php
+    container_name: mysql_svc  # Asigna el nombre del contenedor
+    ports:
+      - 3306:3306  # Asigna el puerto público
+    environment:
+      MYSQL_ROOT_PASSWORD: "test.2023"  # Asigna la contraseña el perfil root
+    volumes:
+      - ./schemas/:/var/lib/mysql  # Asigna la carpeta de volumen pública
+    networks:
+      app_network:
+        aliases:
+          - mysql_host  # Asigna el nombre del host con el que se podrá consumir el servicio
+
+
+volumes:  # Asignar las carpetas de volumenes
+  www: {}
+  schemas: {}
+
+networks:  # Crear la red y asignar los datos necesarios para la red
+  app_network:
+    name: app_net  # Nombre de la red
+    driver: bridge  # Tipo de red bridge para comunicación entre servicios
+    ipam:
+      driver: default
